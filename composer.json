@@ -1,0 +1,36 @@
+{
+    "name": "vovansoft/rutracker-api",
+    "description": "Library for integration with rutracker",
+    "keywords": [ "php", "rutracker"],
+    "homepage": "https://github.org/vovansoft/rutracker-api",
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": ">=7.0",
+        "guzzlehttp/guzzle": "~6.0",
+        "symfony/dom-crawler": "3.*",
+        "symfony/css-selector": "3.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "VovanSoft\\RutrackerAPI\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": { "VovanSoft\\RutrackerAPI\\Tests\\": "tests/" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vladimir Barmotin",
+            "email": "barmotinvladimir@gmail.com"
+        }
+    ]
+}
