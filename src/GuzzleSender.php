@@ -12,10 +12,15 @@ use VovanSoft\RutrackerAPI\Interfaces\SenderInterface;
  */
 class GuzzleSender implements SenderInterface
 {
-
-    public function send(Request $request):Response
+    /**
+     * @param Request $request
+     * @param bool $allowRedirect
+     *
+     * @return Response
+     */
+    public function send(Request $request, bool $allowRedirect = false):Response
     {
-        $client = new Client(['allow_redirects' => false]);
+        $client = new Client(['allow_redirects' => $allowRedirect]);
 //        var_dump($request->getCookies());
 //        $cookies = new CookieJar();
 //        $cookies->setCookie();

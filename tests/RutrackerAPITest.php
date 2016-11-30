@@ -3,11 +3,10 @@
 namespace VovanSoft\RutrackerAPI\Tests;
 
 use PHPUnit_Framework_TestCase;
-use Symfony\Component\DomCrawler\Crawler;
-use VovanSoft\RutrackerAPI\Entities\RutrackerAuthor;
-use VovanSoft\RutrackerAPI\Entities\RutrackerForum;
-use VovanSoft\RutrackerAPI\Entities\RutrackerTopic;
+use VovanSoft\RutrackerAPI\Entities\Options\SearchOptions;
+use VovanSoft\RutrackerAPI\Entities\Options\SortEntity;
 use VovanSoft\RutrackerAPI\GuzzleSender;
+use VovanSoft\RutrackerAPI\Parsers\SymfonyParser;
 use VovanSoft\RutrackerAPI\RutrackerAPI;
 
 /**
@@ -17,7 +16,7 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
 {
     private function getRutrackerAPI()
     {
-        $rutrackerAPI = new RutrackerAPI('Y6uBaJIKaCCCP', 'cccp081293', new GuzzleSender(), $this->getCookies());
+        $rutrackerAPI = new RutrackerAPI('Y6uBaJIKaCCCP', 'cccp081293', new GuzzleSender(), new SymfonyParser(),$this->getCookies());
         $this->saveCookies($rutrackerAPI->getCookies());
         return $rutrackerAPI;
     }
@@ -30,11 +29,15 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
         $this->saveInFile($fileString, 'torrent.torrent', 'wb');
     }
 
-    public function tes1tSearch()
+    public function testSearch()
     {
         $rutrackerAPI = $this->getRutrackerAPI();
-        $searchString = $rutrackerAPI->search('the walking dead');
-
+        $options = new SearchOptions('the walking dead');
+        $options->setOnlyOpen(true);
+        $options->setForumId(2366);
+        $options->setUserName('qqss44');
+        $options->setSort(new SortEntity('seeds', 'DESC'));
+        $searchString = $rutrackerAPI->search($options);
         $this->saveInFile($searchString, 'search.html');
 
     }
@@ -66,33 +69,13 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
         fwrite(fopen($file, $mode),$data);
     }
 
-    public function testParser()
+    public function tes1tParser()
     {
         $text = fread(fopen('search.html', 'r'), filesize('search.html'));
 
-        $crawler = new Crawler($text);
+        $rutrackerTopics = (new SymfonyParser())->parse($text);
 
-        $rutrackerTopics = [];
-
-        $crawler->filter('.hl-tr')->each(function($item)use (&$rutrackerTopics){
-            /** @var Crawler $item */
-
-            $themeLink = $item->filter('.t-title > a');
-            $authorLink = $item->filter('.u-name > a');
-            $forumLink = $item->filter('.f-name > a');
-            $rutrackerTopic = (new RutrackerTopic())
-                ->setForum(new RutrackerForum(explode('&', explode('f=',$forumLink->attr('href'))[1])[0], $forumLink->text()))
-                ->setId($themeLink->attr('data-topic_id'))
-                ->setTheme($themeLink->text())
-                ->setAuthor(new RutrackerAuthor(explode('=',$authorLink->attr('href'))[1], $authorLink->text()))
-                ->setSize($item->filter('.tor-size > u')->text())
-                ->setSeedersCount($item->filter('td')->getNode(6)->getElementsByTagName('u')->item(0)->textContent)
-                ->setLeechersCount($item->filter('.leechmed > b')->text())
-                ->setCreatedAt($item->filter('td')->getNode(9)->getElementsByTagName('u')->item(0)->textContent);
-
-            $rutrackerTopics[] = $rutrackerTopic;
-        });
-
-        var_dump($rutrackerTopics[0]);
+        var_dump($rutrackerTopics);
     }
+
 }

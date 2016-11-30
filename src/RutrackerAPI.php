@@ -3,12 +3,10 @@
 namespace VovanSoft\RutrackerAPI;
 
 use DateTime;
-use Sunra\PhpSimple\HtmlDomParser;
-use Symfony\Component\DomCrawler\Crawler;
-use VovanSoft\RutrackerAPI\Entities\RutrackerAuthor;
-use VovanSoft\RutrackerAPI\Entities\RutrackerForum;
+use VovanSoft\RutrackerAPI\Entities\Options\SearchOptions;
 use VovanSoft\RutrackerAPI\Entities\RutrackerTopic;
 use VovanSoft\RutrackerAPI\Filters\AbstractRutrackerTopicFilter;
+use VovanSoft\RutrackerAPI\Interfaces\SearchParserInterface;
 use VovanSoft\RutrackerAPI\Interfaces\SenderInterface;
 
 /**
@@ -35,6 +33,21 @@ class RutrackerAPI
      */
     const RUTRACKER_LOGIN_CONST = "%C2%F5%EE%E4";
 
+    const FIELDS = [
+        'registered' => 1,
+        'topic_name' => 2,
+        'downloads' => 4,
+        'seeds' => 10,
+        'leeches' => 11,
+        'size' => 7,
+        'last_message' => 8
+    ];
+
+    const DIRECTIONS = [
+        'ASC' => 1,
+        'DESC' => 2
+    ];
+
     /**
      * @var string
      */
@@ -54,8 +67,18 @@ class RutrackerAPI
      * @var array
      */
     private $cookies=[];
+    /**
+     * @var SearchParserInterface
+     */
+    private $searchParser;
 
-    public function __construct(string $login, string $password, SenderInterface $sender, array $cookies = null)
+    public function __construct(
+        string $login,
+        string $password,
+        SenderInterface $sender,
+        SearchParserInterface $searchParser,
+        array $cookies = null
+    )
     {
         $this->login = $login;
         $this->password = $password;
@@ -68,19 +91,21 @@ class RutrackerAPI
         if(!$this->cookies) {
             $this->login();
         }
+        $this->searchParser = $searchParser;
     }
 
     /**
      * @param Request $request
+     * @param bool $allowRedirect
      *
      * @return Response
      */
-    private function send(Request $request) : Response
+    private function send(Request $request, bool $allowRedirect = false) : Response
     {
         $request->setCookies( array_map(function($item){
             return explode(';', $item)[0];
         },$this->getCookies()));
-        return $this->sender->send($request);
+        return $this->sender->send($request, $allowRedirect);
     }
 
     private function login()
@@ -96,42 +121,69 @@ class RutrackerAPI
         $this->setCookies($resp->getCookies());
     }
 
-    public function search($name, AbstractRutrackerTopicFilter $filter = null)
+    /**
+     * @param SearchOptions $options
+     * @param AbstractRutrackerTopicFilter|null $filter
+     *
+     * @return array|RutrackerTopic[]
+     */
+    public function search(SearchOptions $options, AbstractRutrackerTopicFilter $filter = null)
     {
-        $request = new Request(self::RUTRACKER_SEARCH_URL.str_replace(' ', '%20', $name));
+        $resp = $this->send($this->getRequestFromSearchOptions($options), true);
 
-        $resp = $this->send($request);
-
-        $crawler = new Crawler($resp->getBody());
-
-        $rutrackerTopics = [];
-
-        $crawler->filter('.hl-tr')->each(function($item)use (&$rutrackerTopics){
-            /** @var Crawler $item */
-
-            $themeLink = $item->filter('.t-title > a');
-            $authorLink = $item->filter('.u-name > a');
-            $forumLink = $item->filter('.f-name > a');
-            $rutrackerTopic = (new RutrackerTopic())
-                ->setForum(new RutrackerForum(explode('&', explode('f=',$forumLink->attr('href'))[1])[0], $forumLink->text()))
-                ->setId($themeLink->attr('data-topic_id'))
-                ->setTheme($themeLink->text())
-                ->setAuthor(new RutrackerAuthor(explode('=',$authorLink->attr('href'))[1], $authorLink->text()))
-                ->setSize($item->filter('.tor-size > u')->text())
-                ->setSeedersCount($item->filter('td')->getNode(6)->getElementsByTagName('u')->item(0)->textContent)
-                ->setLeechersCount($item->filter('.leechmed > b')->text())
-                ->setCreatedAt($item->filter('td')->getNode(9)->getElementsByTagName('u')->item(0)->textContent);
-
-            $rutrackerTopics[] = $rutrackerTopic;
-        });
+        $rutrackerTopics = $this->searchParser->parse($resp->getBody());
 
         if($filter){
             $rutrackerTopics = array_filter($rutrackerTopics, function($item)use($filter){
                 return $filter->check($item);
             });
         }
-
+        return $resp->getBody();
         return $rutrackerTopics;
+    }
+
+    /**
+     * @param SearchOptions $options
+     *
+     * @return Request
+     */
+    private function getRequestFromSearchOptions(SearchOptions $options): Request
+    {
+        $url = self::RUTRACKER_SEARCH_URL.str_replace(' ', '%20', $options->getName());
+
+        $data = [];
+
+        if($options->getOnlyOpen()) {
+            $data['oop'] = 1;
+        }
+
+        if($options->getUserName()) {
+            $data['pn'] = $options->getUserName();
+        }
+
+        if($options->getSort()) {
+            $data['o'] = self::FIELDS[$options->getSort()->getField()];
+            $data['s'] = self::DIRECTIONS[$options->getSort()->getDirection()];
+        }
+
+        if($options->getForumId()) {
+            $url.='&f='.$options->getForumId();
+            if($data) {
+                $data['f[]'] = $options->getForumId();
+            }
+        }
+
+        if(!empty($data)) {
+            $data['nm'] = $options->getName();
+            return new Request($url, 'POST', $data);
+        } else {
+            return new Request($url);
+        }
+    }
+
+    public function getAllForums()
+    {
+
     }
 
     /**

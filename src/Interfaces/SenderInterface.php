@@ -13,7 +13,8 @@ interface SenderInterface
     /**
      * @param Request $request
      *
+     * @param bool $allowRedirect
      * @return Response
      */
-    public function send(Request $request):Response;
+    public function send(Request $request, bool $allowRedirect = false):Response;
 }
