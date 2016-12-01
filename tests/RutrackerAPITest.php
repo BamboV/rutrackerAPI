@@ -6,6 +6,7 @@ use PHPUnit_Framework_TestCase;
 use VovanSoft\RutrackerAPI\Entities\Options\SearchOptions;
 use VovanSoft\RutrackerAPI\Entities\Options\SortEntity;
 use VovanSoft\RutrackerAPI\GuzzleSender;
+use VovanSoft\RutrackerAPI\Parsers\SymfonyForumGroupParser;
 use VovanSoft\RutrackerAPI\Parsers\SymfonyParser;
 use VovanSoft\RutrackerAPI\RutrackerAPI;
 
@@ -16,7 +17,7 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
 {
     private function getRutrackerAPI()
     {
-        $rutrackerAPI = new RutrackerAPI('Y6uBaJIKaCCCP', 'cccp081293', new GuzzleSender(), new SymfonyParser(),$this->getCookies());
+        $rutrackerAPI = new RutrackerAPI('', '', new GuzzleSender(), new SymfonyParser(),$this->getCookies());
         $this->saveCookies($rutrackerAPI->getCookies());
         return $rutrackerAPI;
     }
@@ -29,7 +30,7 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
         $this->saveInFile($fileString, 'torrent.torrent', 'wb');
     }
 
-    public function testSearch()
+    public function tes1tSearch()
     {
         $rutrackerAPI = $this->getRutrackerAPI();
         $options = new SearchOptions('the walking dead');
@@ -40,6 +41,23 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
         $searchString = $rutrackerAPI->search($options);
         $this->saveInFile($searchString, 'search.html');
 
+    }
+
+    public function testGetForums()
+    {
+//        $rutrackerAPI = $this->getRutrackerAPI();
+//        $this->saveInFile($rutrackerAPI->getAllForums(), 'forums.html');
+        $text = fread(fopen('search.html', 'r'), filesize('search.html'));
+
+        $parser = new SymfonyForumGroupParser();
+        $groups = $parser->parse($text);
+
+        foreach ($groups as $index => $group) {
+            echo $group->getTitle()."\t".$group->getId()."\n";
+            foreach($group->getSubForums() as $forum) {
+                echo '|-'.$forum->getTitle()."\t".$forum->getId()."\n";
+            }
+        }
     }
 
     private function saveCookies(array $cookies)

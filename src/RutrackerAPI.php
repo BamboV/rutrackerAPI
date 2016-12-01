@@ -6,6 +6,7 @@ use DateTime;
 use VovanSoft\RutrackerAPI\Entities\Options\SearchOptions;
 use VovanSoft\RutrackerAPI\Entities\RutrackerTopic;
 use VovanSoft\RutrackerAPI\Filters\AbstractRutrackerTopicFilter;
+use VovanSoft\RutrackerAPI\Interfaces\ForumGroupParserInterface;
 use VovanSoft\RutrackerAPI\Interfaces\SearchParserInterface;
 use VovanSoft\RutrackerAPI\Interfaces\SenderInterface;
 
@@ -71,12 +72,27 @@ class RutrackerAPI
      * @var SearchParserInterface
      */
     private $searchParser;
+    /**
+     * @var ForumGroupParserInterface
+     */
+    private $forumGroupParser;
 
+    /**
+     * RutrackerAPI constructor.
+     *
+     * @param string $login
+     * @param string $password
+     * @param SenderInterface $sender
+     * @param SearchParserInterface $searchParser
+     * @param ForumGroupParserInterface $forumGroupParser
+     * @param array|null $cookies
+     */
     public function __construct(
         string $login,
         string $password,
         SenderInterface $sender,
         SearchParserInterface $searchParser,
+        ForumGroupParserInterface $forumGroupParser,
         array $cookies = null
     )
     {
@@ -92,6 +108,7 @@ class RutrackerAPI
             $this->login();
         }
         $this->searchParser = $searchParser;
+        $this->forumGroupParser = $forumGroupParser;
     }
 
     /**
@@ -138,7 +155,7 @@ class RutrackerAPI
                 return $filter->check($item);
             });
         }
-        return $resp->getBody();
+
         return $rutrackerTopics;
     }
 
@@ -181,8 +198,16 @@ class RutrackerAPI
         }
     }
 
+    /**
+     * @return array
+     */
     public function getAllForums()
     {
+        $request = new Request(self::RUTRACKER_SEARCH_URL.'1');
+
+        $resp = $this->send($request);
+
+        return $this->forumGroupParser->parse($resp->getBody());
 
     }
 
