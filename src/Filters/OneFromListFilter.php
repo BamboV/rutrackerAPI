@@ -1,8 +1,8 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI\Filters;
+namespace BamboV\RutrackerAPI\Filters;
 
-use VovanSoft\RutrackerAPI\Entities\RutrackerTopic;
+use BamboV\RutrackerAPI\Entities\RutrackerTopic;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>

@@ -1,8 +1,6 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI\Entities;
-
-use DateTime;
+namespace BamboV\RutrackerAPI\Entities;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>

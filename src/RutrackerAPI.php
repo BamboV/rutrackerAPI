@@ -1,14 +1,14 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI;
+namespace BamboV\RutrackerAPI;
 
 use DateTime;
-use VovanSoft\RutrackerAPI\Entities\Options\SearchOptions;
-use VovanSoft\RutrackerAPI\Entities\RutrackerTopic;
-use VovanSoft\RutrackerAPI\Filters\AbstractRutrackerTopicFilter;
-use VovanSoft\RutrackerAPI\Interfaces\ForumGroupParserInterface;
-use VovanSoft\RutrackerAPI\Interfaces\SearchParserInterface;
-use VovanSoft\RutrackerAPI\Interfaces\SenderInterface;
+use BamboV\RutrackerAPI\Entities\Options\SearchOptions;
+use BamboV\RutrackerAPI\Entities\RutrackerTopic;
+use BamboV\RutrackerAPI\Filters\AbstractRutrackerTopicFilter;
+use BamboV\RutrackerAPI\Interfaces\ForumGroupParserInterface;
+use BamboV\RutrackerAPI\Interfaces\SearchParserInterface;
+use BamboV\RutrackerAPI\Interfaces\SenderInterface;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>
@@ -18,16 +18,16 @@ class RutrackerAPI
     /**
      * @const string
      */
-    const RUTRACKER_URL = 'http://rutracker.org.3s3s.org';
+    const RUTRACKER_URL = 'http://rutracker.org';
 
-    const RUTRACKER_SEARCH_URL = 'http://rutracker.org.3s3s.org/forum/tracker.php?nm=';
+    const RUTRACKER_SEARCH_URL = 'http://rutracker.org/forum/tracker.php?nm=';
 
-    const RUTRACKER_DOWNLOAD_TORRENT_URL = 'http://dl.rutracker.org.3s3s.org/forum/dl.php?t=';
+    const RUTRACKER_DOWNLOAD_TORRENT_URL = 'http://dl.rutracker.org/forum/dl.php?t=';
 
     /**
      * @const string
      */
-    const RUTRACKER_LOGIN_URL = 'http://login.rutracker.org.3s3s.org/forum/login.php';
+    const RUTRACKER_LOGIN_URL = 'http://login.rutracker.org/forum/login.php';
 
     /**
      * @const string
@@ -233,6 +233,9 @@ class RutrackerAPI
         return $this->cookies;
     }
 
+    /**
+     * @param array $cookies
+     */
     private function setCookies(array $cookies) {
         $this->cookies = array_filter($cookies, function($item){
             $matches = [];

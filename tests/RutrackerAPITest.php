@@ -1,14 +1,14 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI\Tests;
+namespace BamboV\RutrackerAPI\Tests;
 
+use BamboV\RutrackerAPI\Tests\Mock\MockSender;
 use PHPUnit_Framework_TestCase;
-use VovanSoft\RutrackerAPI\Entities\Options\SearchOptions;
-use VovanSoft\RutrackerAPI\Entities\Options\SortEntity;
-use VovanSoft\RutrackerAPI\GuzzleSender;
-use VovanSoft\RutrackerAPI\Parsers\SymfonyForumGroupParser;
-use VovanSoft\RutrackerAPI\Parsers\SymfonyParser;
-use VovanSoft\RutrackerAPI\RutrackerAPI;
+use BamboV\RutrackerAPI\Entities\Options\SearchOptions;
+use BamboV\RutrackerAPI\Entities\Options\SortEntity;
+use BamboV\RutrackerAPI\Parsers\SymfonyForumGroupParser;
+use BamboV\RutrackerAPI\Parsers\SymfonyParser;
+use BamboV\RutrackerAPI\RutrackerAPI;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>
@@ -17,20 +17,22 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
 {
     private function getRutrackerAPI()
     {
-        $rutrackerAPI = new RutrackerAPI('', '', new GuzzleSender(), new SymfonyParser(),$this->getCookies());
-        $this->saveCookies($rutrackerAPI->getCookies());
+        $mockSender = new MockSender();
+        $rutrackerAPI = new RutrackerAPI($mockSender->getLogin(), $mockSender->getPassword(), $mockSender, new SymfonyParser(), new SymfonyForumGroupParser());
+
         return $rutrackerAPI;
     }
 
-    public function te1stDownloadFile()
+    public function testDownloadFile()
     {
         $rutrackerAPI = $this->getRutrackerAPI();
         $fileString = $rutrackerAPI->downloadTorrent(5302168);
 
-        $this->saveInFile($fileString, 'torrent.torrent', 'wb');
+        $text = fread(fopen('tests/Files/torrent.torrent', 'r'), filesize('tests/Files/torrent.torrent'));
+        $this->assertEquals($text, $fileString);
     }
 
-    public function tes1tSearch()
+    public function testSearch()
     {
         $rutrackerAPI = $this->getRutrackerAPI();
         $options = new SearchOptions('the walking dead');
@@ -38,62 +40,24 @@ class RutrackerAPITest extends PHPUnit_Framework_TestCase
         $options->setForumId(2366);
         $options->setUserName('qqss44');
         $options->setSort(new SortEntity('seeds', 'DESC'));
-        $searchString = $rutrackerAPI->search($options);
-        $this->saveInFile($searchString, 'search.html');
+        $resp = $rutrackerAPI->search($options);
+
+        $this->assertEquals(50, count($resp));
+
+        $this->assertEquals(
+            'Ходячие мертвецы / The Walking Dead / Сезон: 7 / Серии: 1-6 из 16 (Эрнест Р. Дикерсон, Грег Никотеро, Гай Ферленд) [2016, США, Ужасы, триллер, драма, WEBRip 1080p] 2xMVO (LostFilm | FOX HD) + Original + Subs (Rus, Eng)',
+            $resp[0]->getTheme()
+        );
 
     }
 
     public function testGetForums()
     {
-//        $rutrackerAPI = $this->getRutrackerAPI();
-//        $this->saveInFile($rutrackerAPI->getAllForums(), 'forums.html');
-        $text = fread(fopen('search.html', 'r'), filesize('search.html'));
+        $rutrackerAPI = $this->getRutrackerAPI();
 
-        $parser = new SymfonyForumGroupParser();
-        $groups = $parser->parse($text);
+        $groups = $rutrackerAPI->getAllForums();
 
-        foreach ($groups as $index => $group) {
-            echo $group->getTitle()."\t".$group->getId()."\n";
-            foreach($group->getSubForums() as $forum) {
-                echo '|-'.$forum->getTitle()."\t".$forum->getId()."\n";
-            }
-        }
-    }
-
-    private function saveCookies(array $cookies)
-    {
-        $c = '';
-        foreach($cookies as $cookie) {
-            $c.=$cookie;
-        }
-
-        $this->saveInFile($c, 'cookies.txt');
-    }
-
-    /**
-     * @return array
-     */
-    private function getCookies(): array
-    {
-        try {
-            return explode("\n", fread(fopen('cookies.txt', 'r'), filesize('cookies.txt')));
-        } catch(\Exception $ex) {
-            return [];
-        }
-    }
-
-    private function saveInFile(string $data, string $file, string $mode = 'w')
-    {
-        fwrite(fopen($file, $mode),$data);
-    }
-
-    public function tes1tParser()
-    {
-        $text = fread(fopen('search.html', 'r'), filesize('search.html'));
-
-        $rutrackerTopics = (new SymfonyParser())->parse($text);
-
-        var_dump($rutrackerTopics);
+        $this->assertNotEmpty($groups);
     }
 
 }

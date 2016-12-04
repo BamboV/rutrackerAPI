@@ -1,11 +1,11 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI\Parsers;
+namespace BamboV\RutrackerAPI\Parsers;
 
 use Symfony\Component\DomCrawler\Crawler;
-use VovanSoft\RutrackerAPI\Entities\RutrackerForum;
-use VovanSoft\RutrackerAPI\Entities\RutrackerForumGroup;
-use VovanSoft\RutrackerAPI\Interfaces\ForumGroupParserInterface;
+use BamboV\RutrackerAPI\Entities\RutrackerForum;
+use BamboV\RutrackerAPI\Entities\RutrackerForumGroup;
+use BamboV\RutrackerAPI\Interfaces\ForumGroupParserInterface;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>

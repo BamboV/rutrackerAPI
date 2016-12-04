@@ -1,6 +1,6 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI\Entities;
+namespace BamboV\RutrackerAPI\Entities;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>

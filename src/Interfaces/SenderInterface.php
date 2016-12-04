@@ -1,9 +1,9 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI\Interfaces;
+namespace BamboV\RutrackerAPI\Interfaces;
 
-use VovanSoft\RutrackerAPI\Request;
-use VovanSoft\RutrackerAPI\Response;
+use BamboV\RutrackerAPI\Request;
+use BamboV\RutrackerAPI\Response;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>

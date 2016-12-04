@@ -1,5 +1,5 @@
 {
-    "name": "vovansoft/rutracker-api",
+    "name": "bambov/rutracker-api",
     "description": "Library for integration with rutracker",
     "keywords": [ "php", "rutracker"],
     "homepage": "https://github.org/vovansoft/rutracker-api",
@@ -16,11 +16,11 @@
     },
     "autoload": {
         "psr-4": {
-            "VovanSoft\\RutrackerAPI\\": "src/"
+            "BamboV\\RutrackerAPI\\": "src/"
         }
     },
     "autoload-dev": {
-        "psr-4": { "VovanSoft\\RutrackerAPI\\Tests\\": "tests/" }
+        "psr-4": { "BamboV\\RutrackerAPI\\Tests\\": "tests/" }
     },
     "extra": {
         "branch-alias": {

@@ -1,11 +1,11 @@
 <?php
 
-namespace VovanSoft\RutrackerAPI;
+namespace BamboV\RutrackerAPI;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
-use VovanSoft\RutrackerAPI\Interfaces\SenderInterface;
+use BamboV\RutrackerAPI\Interfaces\SenderInterface;
 
 /**
  * @author Vladimir Barmotin <barmotinvladimir@gmail.com>
@@ -21,9 +21,7 @@ class GuzzleSender implements SenderInterface
     public function send(Request $request, bool $allowRedirect = false):Response
     {
         $client = new Client(['allow_redirects' => $allowRedirect]);
-//        var_dump($request->getCookies());
-//        $cookies = new CookieJar();
-//        $cookies->setCookie();
+
         $options = [];
         $options['form_params'] = $request->getData();
 
